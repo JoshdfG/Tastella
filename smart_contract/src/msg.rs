@@ -118,11 +118,11 @@ pub enum QueryMsg {
 }
 #[cw_serde]
 pub struct GetOrderCostResponse {
-    pub total: Uint128, // Just the item total
+    pub total: Uint128,
 }
 #[cw_serde]
 pub struct GetLatestOrderIdResponse {
-    pub order_id: Option<String>, // None if no orders exist
+    pub order_id: Option<String>,
 }
 #[cw_serde]
 pub struct GetRiderResponse {
