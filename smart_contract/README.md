@@ -1,7 +1,6 @@
-# **CW Counter Starter Contract**
+# **Tastella Starter Contract**
 
-This is a basic CosmWasm smart contract that allows you to set a counter and then either **increment** or **reset** it. You can also query the current counter value.
-
+This is a food delivery system that makes use of xion smart contract and the gasless transaction to make user experience topnotch for our users.
 ---
 
 ## **Prerequisites**
