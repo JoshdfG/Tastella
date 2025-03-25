@@ -1,3 +1,4 @@
+#[cfg(not(feature = "library"))]
 use crate::error::ContractError;
 use crate::execute::{self, init};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
@@ -7,7 +8,6 @@ use crate::query::{
     get_rider_by_address, get_user_orders, get_user_restaurants, query_platform_config,
 };
 
-#[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
