@@ -1,9 +1,9 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::{Addr, Decimal, Deps, DepsMut, Env, MessageInfo, Response, Uint128};
-use cosmwasm_std::{BankMsg, Coin};
+use cosmwasm_std::{BankMsg, Coin, StdResult};
 
 use crate::error::ContractError;
-use crate::msg::OrderItem;
+use crate::msg::{GetLatestOrderIdResponse, OrderItem};
 use crate::state::{
     Escrow, MenuItem, Order, OrderStatus, PlatformConfig, Restaurant, ESCROWS, ORDERS,
     PLATFORM_CONFIG, RESTAURANTS, RIDERS,
@@ -50,7 +50,7 @@ pub fn register_restaurant(
         restaurant_address,
     };
 
-    RESTAURANTS.save(deps.storage, &restaurant_id, &restaurant)?;
+    RESTAURANTS.save(deps.storage, restaurant_id.as_str(), &restaurant)?;
     Ok(Response::new().add_attribute("action", "register_restaurant"))
 }
 
@@ -74,44 +74,97 @@ pub fn add_menu_item(
         image_uri,
     };
 
-    MENU_ITEMS.save(deps.storage, (&restaurant_id, &item_id), &menu_item)?;
+    MENU_ITEMS.save(
+        deps.storage,
+        (restaurant_id.as_str(), item_id.as_str()),
+        &menu_item,
+    )?;
 
     Ok(Response::new().add_attribute("action", "add_menu_item"))
 }
 
-pub fn release_funds(deps: DepsMut, order_id: String) -> Result<Response, ContractError> {
-    let mut escrow = ESCROWS.load(deps.storage, &order_id)?;
+pub fn remove_menu_item(
+    deps: DepsMut,
+    info: MessageInfo,
+    item_id: String,
+) -> Result<Response, ContractError> {
+    let restaurant_id = format!("restaurant_{}", info.sender);
 
-    if escrow.released {
-        return Err(ContractError::FundsAlreadyReleased {});
-    }
+    RESTAURANTS.load(deps.storage, &restaurant_id)?;
 
-    let order = ORDERS.load(deps.storage, &order_id)?;
+    MENU_ITEMS.remove(deps.storage, (restaurant_id.as_str(), item_id.as_str()));
 
-    if order.status != OrderStatus::Completed {
-        return Err(ContractError::OrderNotCompleted {});
-    }
-
-    let restaurant = RESTAURANTS.load(deps.storage, &order.restaurant_id)?;
-
-    escrow.released = true;
-    ESCROWS.save(deps.storage, &order_id, &escrow)?;
-
-    let release_msg = cosmwasm_std::BankMsg::Send {
-        to_address: restaurant.owner.to_string(),
-        amount: vec![cosmwasm_std::Coin {
-            denom: "uusd".to_string(),
-            amount: escrow.amount,
-        }],
-    };
-
-    Ok(Response::new()
-        .add_message(release_msg)
-        .add_attribute("action", "release_funds")
-        .add_attribute("order_id", order_id)
-        .add_attribute("amount", escrow.amount.to_string()))
+    Ok(Response::new().add_attribute("action", "remove_menu_item"))
 }
 
+pub fn update_menu_item(
+    deps: DepsMut,
+    info: MessageInfo,
+    item_id: String,
+    name: Option<String>,
+    price: Option<Uint128>,
+    available: Option<bool>,
+    image_uri: Option<String>,
+) -> Result<Response, ContractError> {
+    let restaurant_id = format!("restaurant_{}", info.sender);
+
+    // Verify restaurant exists and sender is owner
+    RESTAURANTS.load(deps.storage, &restaurant_id)?;
+
+    // Load existing menu item
+    let key = (restaurant_id.as_str(), item_id.as_str());
+    let mut menu_item = MENU_ITEMS
+        .load(deps.storage, key)
+        .map_err(|_| ContractError::MenuItemNotFound {})?;
+
+    // Update fields if provided
+    if let Some(new_name) = name {
+        menu_item.name = new_name;
+    }
+    if let Some(new_price) = price {
+        menu_item.price = new_price;
+    }
+    if let Some(new_available) = available {
+        menu_item.available = new_available;
+    }
+    if let Some(new_image_uri) = image_uri {
+        menu_item.image_uri = new_image_uri;
+    }
+
+    // Save updated menu item
+    MENU_ITEMS.save(deps.storage, key, &menu_item)?;
+
+    Ok(Response::new()
+        .add_attribute("action", "update_menu_item")
+        .add_attribute("restaurant_id", restaurant_id)
+        .add_attribute("item_id", item_id))
+}
+
+pub fn toggle_menu_item_availability(
+    deps: DepsMut,
+    info: MessageInfo,
+    item_id: String,
+) -> Result<Response, ContractError> {
+    let restaurant_id = format!("restaurant_{}", info.sender);
+
+    RESTAURANTS.load(deps.storage, &restaurant_id)?;
+
+    let key = (restaurant_id.as_str(), item_id.as_str());
+
+    let mut menu_item = MENU_ITEMS
+        .load(deps.storage, key)
+        .map_err(|_| ContractError::MenuItemNotFound {})?;
+
+    menu_item.available = !menu_item.available;
+
+    MENU_ITEMS.save(deps.storage, key, &menu_item)?;
+
+    Ok(Response::new()
+        .add_attribute("action", "toggle_menu_item_availability")
+        .add_attribute("restaurant_id", restaurant_id)
+        .add_attribute("item_id", item_id)
+        .add_attribute("available", menu_item.available.to_string()))
+}
 pub fn create_order(
     deps: DepsMut,
     env: Env,
@@ -128,11 +181,9 @@ pub fn create_order(
         let menu_item = MENU_ITEMS
             .may_load(deps.storage, (&restaurant_id, &item.item_id))?
             .ok_or(ContractError::ItemNotFound {})?;
-
         if !menu_item.available {
             return Err(ContractError::ItemNotAvailable {});
         }
-
         let item_total = menu_item
             .price
             .checked_mul(Uint128::from(item.quantity))
@@ -146,13 +197,8 @@ pub fn create_order(
         return Err(ContractError::InvalidOrderAmount {});
     }
 
-    if info.funds.len() != 1 {
-        return Err(ContractError::IncorrectPayment {});
-    }
-    if info.funds[0].denom != NATIVE_DENOM {
-        return Err(ContractError::IncorrectPayment {});
-    }
-    if info.funds[0].amount != total {
+    if info.funds.len() != 1 || info.funds[0].denom != NATIVE_DENOM || info.funds[0].amount != total
+    {
         return Err(ContractError::IncorrectPayment {});
     }
 
@@ -174,7 +220,6 @@ pub fn create_order(
         rider_id: None,
     };
     ORDERS.save(deps.storage, &order_id, &order)?;
-
     ESCROWS.save(
         deps.storage,
         &order_id,
@@ -267,18 +312,6 @@ pub fn confirm_delivery(
         .add_attribute("order_id", order_id)
         .add_attribute("status", "Completed"))
 }
-pub fn validate_order(
-    deps: Deps,
-    restaurant_id: &str,
-    items: &[OrderItem],
-) -> Result<Uint128, ContractError> {
-    let mut total = Uint128::zero();
-    for item in items {
-        let menu_item = MENU_ITEMS.load(deps.storage, (&restaurant_id, &item.item_id))?;
-        total += menu_item.price * Uint128::from(item.quantity);
-    }
-    Ok(total)
-}
 
 pub fn accept_order(
     deps: DepsMut,
@@ -362,4 +395,22 @@ pub fn deposit_funds(
 
     ESCROWS.save(deps.storage, &order_id, &escrow)?;
     Ok(Response::new().add_attribute("action", "deposit_funds"))
+}
+
+pub fn get_latest_order_id(deps: Deps, address: Addr) -> StdResult<GetLatestOrderIdResponse> {
+    let latest_order = ORDERS
+        .range(deps.storage, None, None, cosmwasm_std::Order::Descending)
+        .filter_map(|item| {
+            let (id, order) = item.unwrap();
+            if order.customer == address {
+                Some(id)
+            } else {
+                None
+            }
+        })
+        .next();
+
+    Ok(GetLatestOrderIdResponse {
+        order_id: latest_order,
+    })
 }

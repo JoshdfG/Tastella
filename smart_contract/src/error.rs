@@ -74,5 +74,8 @@ pub enum ContractError {
 
     #[error("Item not found")]
     ItemNotFound {},
+
+    #[error("MenuItem not found")]
+    MenuItemNotFound,
 }
 pub type ContractResult<T> = Result<T, ContractError>;

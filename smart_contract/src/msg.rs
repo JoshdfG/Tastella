@@ -36,6 +36,19 @@ pub enum ExecuteMsg {
         price: Uint128,
         image_uri: String,
     },
+    RemoveMenuItem {
+        item_id: String,
+    },
+    UpdateMenuItem {
+        item_id: String,
+        name: Option<String>,
+        price: Option<Uint128>,
+        available: Option<bool>,
+        image_uri: Option<String>,
+    },
+    ToggleMenuItemAvailability {
+        item_id: String,
+    },
     CreateOrder {
         restaurant_id: String,
         items: Vec<OrderItem>,
@@ -53,9 +66,6 @@ pub enum ExecuteMsg {
     DepositFunds {
         order_id: String,
     },
-    ReleaseFunds {
-        order_id: String,
-    },
 }
 
 #[cw_serde]
@@ -71,7 +81,7 @@ pub enum QueryMsg {
     GetOrdersFromARestaurant { restaurant_id: String },
 
     #[returns(GetOrderResponse)]
-    GetOrder { id: String },
+    GetOrderDetails { id: String },
 
     #[returns(GetOrderStatus)]
     GetAllSuccessfulOrderStatus { is_delivered: bool },
@@ -86,18 +96,34 @@ pub enum QueryMsg {
     GetPlatformConfig {},
 
     #[returns(Rider)]
-    GetRider { rider_id: String },
+    GetRiderById { rider_id: String },
 
     #[returns(GetRiderResponse)]
-    GetRiderByAddress { riders_address: String },
+    GetRiderByAddress { riders_address: Addr },
 
     #[returns(GetUserRestaurantsResponse)]
-    GetUserRestaurants { owner: String },
+    GetUserOwnedRestaurants { owner: Addr },
 
     #[returns(GetUserOrdersResponse)]
-    GetOrders { address: String },
-}
+    GetUserOrders { address: Addr },
 
+    #[returns(GetLatestOrderIdResponse)]
+    GetLatestOrderId { address: Addr },
+
+    #[returns(GetOrderCostResponse)]
+    GetOrderCost {
+        restaurant_id: String,
+        items: Vec<OrderItem>,
+    },
+}
+#[cw_serde]
+pub struct GetOrderCostResponse {
+    pub total: Uint128, // Just the item total
+}
+#[cw_serde]
+pub struct GetLatestOrderIdResponse {
+    pub order_id: Option<String>, // None if no orders exist
+}
 #[cw_serde]
 pub struct GetRiderResponse {
     pub rider: Option<Rider>,
