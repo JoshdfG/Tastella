@@ -2,14 +2,14 @@
 use crate::state::{Order, OrderStatus, Restaurant, ESCROWS, ORDERS, RESTAURANTS};
 use crate::{
     msg::{
-        GetEscrowResponse, GetMenuItemsResponse, GetOrderResponse, GetOrdersResponse,
-        GetRestaurantsResponse, GetRiderResponse, GetUserOrdersResponse,
-        GetUserRestaurantsResponse, PlatformConfigResponse,
+        GetEscrowResponse, GetMenuItemsResponse, GetOrderCostResponse, GetOrderResponse,
+        GetOrdersResponse, GetRestaurantsResponse, GetRiderResponse, GetUserOrdersResponse,
+        GetUserRestaurantsResponse, OrderItem, PlatformConfigResponse,
     },
     state::{MenuItem, Rider, MENU_ITEMS, PLATFORM_CONFIG, RIDERS},
 };
 
-use cosmwasm_std::{Deps, StdError, StdResult};
+use cosmwasm_std::{Addr, Deps, StdError, StdResult, Uint128};
 
 use crate::msg::GetOrderStatusResponse;
 
@@ -124,13 +124,12 @@ pub fn get_rider(deps: Deps, rider_id: String) -> StdResult<Rider> {
     RIDERS.load(deps.storage, &rider_id)
 }
 
-pub fn get_user_restaurants(deps: Deps, owner: String) -> StdResult<GetUserRestaurantsResponse> {
-    let owner_addr = deps.api.addr_validate(&owner)?;
+pub fn get_user_restaurants(deps: Deps, owner: Addr) -> StdResult<GetUserRestaurantsResponse> {
     let restaurants: Vec<Restaurant> = RESTAURANTS
         .range(deps.storage, None, None, cosmwasm_std::Order::Ascending)
         .filter_map(|item| {
             let (_, restaurant) = item.unwrap();
-            if restaurant.owner == owner_addr {
+            if restaurant.owner == owner {
                 Some(restaurant)
             } else {
                 None
@@ -140,24 +139,18 @@ pub fn get_user_restaurants(deps: Deps, owner: String) -> StdResult<GetUserResta
     Ok(GetUserRestaurantsResponse { restaurants })
 }
 
-pub fn get_rider_by_address(deps: Deps, address: String) -> StdResult<GetRiderResponse> {
-    let sender = deps.api.addr_validate(&address)?;
-    let rider_id = format!("rider_{}", sender);
+pub fn get_rider_by_address(deps: Deps, address: Addr) -> StdResult<GetRiderResponse> {
+    let rider_id = format!("rider_{}", address);
     let rider = RIDERS.may_load(deps.storage, &rider_id)?;
     Ok(GetRiderResponse { rider })
 }
 
-pub fn get_user_orders(deps: Deps, address: String) -> StdResult<GetUserOrdersResponse> {
-    let sender = deps
-        .api
-        .addr_validate(&address)
-        .map_err(|e| StdError::generic_err(format!("Invalid address: {}", e)))?;
+pub fn get_user_orders(deps: Deps, address: Addr) -> StdResult<GetUserOrdersResponse> {
     let orders: Vec<Order> = ORDERS
         .range(deps.storage, None, None, cosmwasm_std::Order::Ascending)
         .filter_map(|item| {
             let (_, order) = item.unwrap();
-
-            if order.customer == sender {
+            if order.customer == address {
                 Some(order)
             } else {
                 None
@@ -165,4 +158,40 @@ pub fn get_user_orders(deps: Deps, address: String) -> StdResult<GetUserOrdersRe
         })
         .collect();
     Ok(GetUserOrdersResponse { orders })
+}
+
+pub fn get_order_cost(
+    deps: Deps,
+    restaurant_id: String,
+    items: Vec<OrderItem>,
+) -> StdResult<GetOrderCostResponse> {
+    if items.is_empty() {
+        return Err(StdError::generic_err("Empty order"));
+    }
+
+    RESTAURANTS
+        .load(deps.storage, &restaurant_id)
+        .map_err(|_| StdError::generic_err("Restaurant not found"))?;
+
+    let total = items.iter().fold(Ok(Uint128::zero()), |acc, item| {
+        let acc = acc?;
+        let menu_item = MENU_ITEMS
+            .may_load(deps.storage, (&restaurant_id, &item.item_id))?
+            .ok_or_else(|| StdError::generic_err("Item not found"))?;
+        if !menu_item.available {
+            return Err(StdError::generic_err("Item not available"));
+        }
+        let item_total = menu_item
+            .price
+            .checked_mul(Uint128::from(item.quantity))
+            .map_err(|_| StdError::generic_err("Overflow in item total"))?;
+        acc.checked_add(item_total)
+            .map_err(|_| StdError::generic_err("Overflow in total"))
+    })?;
+
+    if total.is_zero() {
+        return Err(StdError::generic_err("Invalid order amount"));
+    }
+
+    Ok(GetOrderCostResponse { total })
 }
