@@ -15,13 +15,14 @@ mod tests {
         Box::new(contract)
     }
 
-    const USER: &str = "USER";
-    const ADMIN: &str = "ADMIN";
+    const USER: &str = "xion1useraddress";
+    const ADMIN: &str = "xion1adminaddress";
     const NATIVE_DENOM: &str = "uxion";
 
     lazy_static! {
-        static ref RESTAURANT_1: Addr = Addr::unchecked("one");
-        static ref RESTAURANT_2: Addr = Addr::unchecked("two");
+        static ref RESTAURANT_1: Addr = Addr::unchecked("xion1restaurant1");
+        static ref RESTAURANT_2: Addr = Addr::unchecked("xion1restaurant2");
+        static ref FEE_WALLET: Addr = Addr::unchecked("xion1fee_wallet");
     }
 
     fn mock_app() -> App {
@@ -44,20 +45,18 @@ mod tests {
         let mut app = mock_app();
         let contract_id = app.store_code(contract_template());
 
-        let fee_address = Addr::unchecked("fee_wallet");
-
         let msg = InstantiateMsg {
             platform_name: "Food Delivery Platform".to_string(),
             platform_description: "A decentralized food delivery platform".to_string(),
-            owner_address: Addr::unchecked(ADMIN),
-            fee_percentage: Decimal::percent(5), // 5% fee
-            fee_address: fee_address.clone(),
+            owner_address: "xion1adminaddress".to_string(),
+            fee_percentage: Decimal::percent(5),
+            fee_address: FEE_WALLET.to_string(),
         };
 
         let contract_addr = app
             .instantiate_contract(
                 contract_id,
-                Addr::unchecked(ADMIN),
+                Addr::unchecked("xion1adminaddress"),
                 &msg,
                 &[],
                 "Restaurant Contract",
@@ -79,7 +78,7 @@ mod tests {
         let register_msg = ExecuteMsg::RegisterRestaurant {
             name: name.to_string(),
             image_uri: image_uri.to_string(),
-            restaurant_address: restaurant_address.clone(),
+            restaurant_address: restaurant_address.to_string(),
         };
         app.execute_contract(
             Addr::unchecked(user),
@@ -151,12 +150,9 @@ mod tests {
 
     mod restaurant_tests {
 
-        use tastella::{
-            msg::{
-                GetMenuItemsResponse, GetOrderCostResponse, GetOrderStatusResponse,
-                GetOrdersResponse, OrderItem,
-            },
-            state::Rider,
+        use tastella::msg::{
+            GetMenuItemsResponse, GetOrderCostResponse, GetOrderStatusResponse, GetOrdersResponse,
+            GetRiderResponse, OrderItem,
         };
 
         use super::*;
@@ -192,7 +188,8 @@ mod tests {
         fn test_get_order_cost_and_create_order() {
             let (mut app, contract_addr) = proper_instantiate();
 
-            let _user_addr = Addr::unchecked(USER); // Normalize USER
+            let _user_addr = Addr::unchecked(USER);
+
             register_restaurant(
                 &mut app,
                 &contract_addr,
@@ -203,7 +200,7 @@ mod tests {
             );
 
             let restaurant_id = format!("restaurant_{}", USER);
-            println!("restaurant_id: {}", restaurant_id); // Debug output
+            println!("restaurant_id: {}", restaurant_id);
 
             add_menu_item(
                 &mut app,
@@ -230,7 +227,6 @@ mod tests {
             let cost: GetOrderCostResponse = cost_res.unwrap();
             assert_eq!(cost.total, Uint128::new(200));
 
-            // Create order
             let res = create_order(
                 &mut app,
                 &contract_addr,
@@ -256,9 +252,9 @@ mod tests {
                 .value
                 .clone();
 
-            // Query order details
+            // get order details
             let order_query = QueryMsg::GetUserOrders {
-                address: Addr::unchecked(USER),
+                address: Addr::unchecked(USER).to_string(),
             };
             let orders_res: GetOrdersResponse = app
                 .wrap()
@@ -271,7 +267,7 @@ mod tests {
                 .expect("Order not found in GetOrders response");
             assert_eq!(order.total, Uint128::new(200));
 
-            // Query escrow details
+            // get escrow details
             let escrow_query = QueryMsg::GetEscrow {
                 order_id: order_id.clone(),
             };
@@ -327,7 +323,7 @@ mod tests {
                 )
                 .unwrap();
 
-            // Extract order_id from response attributes
+            // get order_id from response attributes
             let order_id = res
                 .events
                 .iter()
@@ -512,27 +508,30 @@ mod tests {
             let (mut app, contract_addr) = proper_instantiate();
 
             let _res = register_rider(&mut app, &contract_addr, USER, "Test Rider".to_string());
-
             let rider_id = format!("rider_{}", USER);
 
             let get_rider = QueryMsg::GetRiderById {
                 rider_id: rider_id.clone(),
             };
 
-            let rider: Rider = app
+            // get returns GetRiderResponse
+            let response: GetRiderResponse = app
                 .wrap()
                 .query_wasm_smart(contract_addr.clone(), &get_rider)
                 .unwrap();
 
+            // Unwrap the Option<Rider> and verify
+            let rider = response.rider.expect("Rider not found");
             assert_eq!(rider.name, "Test Rider");
             assert_eq!(rider.wallet, USER);
+            assert_eq!(rider.id, rider_id);
         }
 
         #[test]
         fn test_escrow_release_on_delivery() {
             let (mut app, contract_addr) = proper_instantiate();
 
-            let restaurant_address = Addr::unchecked("restaurant_wallet");
+            let restaurant_address = Addr::unchecked("xion1restaurant_wallet");
             register_restaurant(
                 &mut app,
                 &contract_addr,
@@ -629,8 +628,7 @@ mod tests {
             )
             .unwrap();
 
-            let fee_address = Addr::unchecked("fee_wallet");
-            let fee_balance = app.wrap().query_balance(&fee_address, "uxion").unwrap();
+            let fee_balance = app.wrap().query_balance(&*FEE_WALLET, "uxion").unwrap();
             assert_eq!(fee_balance.amount, Uint128::new(10));
 
             let restaurant_balance = app

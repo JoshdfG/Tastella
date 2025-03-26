@@ -15,20 +15,23 @@ pub fn init(
     _info: MessageInfo,
     platform_name: String,
     platform_description: String,
-    owner_address: Addr,
+    owner_address: String,
     fee_percentage: Decimal,
-    fee_address: Addr,
+    fee_address: String,
 ) -> Result<Response, ContractError> {
     if fee_percentage > Decimal::one() {
         return Err(ContractError::InvalidFeePercentage {});
     }
 
+    let validated_owner = deps.api.addr_validate(&owner_address)?;
+    let validated_fee_address = deps.api.addr_validate(&fee_address)?;
+
     let config = PlatformConfig {
         platform_name,
         platform_description,
-        owner_address,
+        owner_address: validated_owner,
         fee_percentage,
-        fee_address,
+        fee_address: validated_fee_address,
     };
     PLATFORM_CONFIG.save(deps.storage, &config)?;
 
@@ -39,7 +42,7 @@ pub fn register_restaurant(
     info: MessageInfo,
     name: String,
     image_uri: String,
-    restaurant_address: Addr,
+    restaurant_address: String,
 ) -> Result<Response, ContractError> {
     let restaurant_id = format!("restaurant_{}", info.sender);
     let restaurant = Restaurant {
