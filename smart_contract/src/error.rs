@@ -77,5 +77,11 @@ pub enum ContractError {
 
     #[error("MenuItem not found")]
     MenuItemNotFound,
+
+    #[error("Owner already exists")]
+    OwnerAlreadyExists {},
+
+    #[error("Owner Does Not Exist")]
+    OwnerDoesNotExist {},
 }
 pub type ContractResult<T> = Result<T, ContractError>;

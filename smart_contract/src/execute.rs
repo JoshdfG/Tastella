@@ -29,13 +29,63 @@ pub fn init(
     let config = PlatformConfig {
         platform_name,
         platform_description,
-        owner_address: validated_owner,
+        owners: vec![validated_owner.clone()],
         fee_percentage,
         fee_address: validated_fee_address,
     };
     PLATFORM_CONFIG.save(deps.storage, &config)?;
 
     Ok(Response::new().add_attribute("action", "init"))
+}
+
+pub fn add_new_owner(
+    deps: DepsMut,
+    info: MessageInfo,
+    new_owner: String,
+) -> Result<Response, ContractError> {
+    let mut platform_config = PLATFORM_CONFIG.load(deps.storage)?;
+
+    if !platform_config.owners.contains(&info.sender) {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    let validated_owner = deps.api.addr_validate(&new_owner)?;
+    if platform_config.owners.contains(&validated_owner) {
+        return Err(ContractError::OwnerAlreadyExists {});
+    }
+
+    platform_config.owners.push(validated_owner.clone());
+    PLATFORM_CONFIG.save(deps.storage, &platform_config)?;
+
+    Ok(Response::new()
+        .add_attribute("method", "add_owner")
+        .add_attribute("new_owner", validated_owner.to_string()))
+}
+
+pub fn remove_owner(
+    deps: DepsMut,
+    info: MessageInfo,
+    owner_to_remove: String,
+) -> Result<Response, ContractError> {
+    let mut platform_config = PLATFORM_CONFIG.load(deps.storage)?;
+
+    if !platform_config.owners.contains(&info.sender) {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    let validated_owner = deps.api.addr_validate(&owner_to_remove)?;
+    if !platform_config.owners.contains(&validated_owner) {
+        return Err(ContractError::OwnerDoesNotExist {});
+    }
+
+    platform_config
+        .owners
+        .retain(|owner| owner != &validated_owner);
+    PLATFORM_CONFIG.save(deps.storage, &platform_config)?;
+
+    Ok(Response::new()
+        .add_attribute("method", "remove_owner")
+        .add_attribute("owner_to_remove", validated_owner.to_string()))
 }
 pub fn register_restaurant(
     deps: DepsMut,

@@ -16,7 +16,7 @@ mod tests {
     }
 
     const USER: &str = "xion1useraddress";
-    const ADMIN: &str = "xion1adminaddress";
+    const USER_2: &str = "xion1adminaddress";
     const NATIVE_DENOM: &str = "uxion";
 
     lazy_static! {
@@ -152,10 +152,35 @@ mod tests {
 
         use tastella::msg::{
             GetMenuItemsResponse, GetOrderCostResponse, GetOrderStatusResponse, GetOrdersResponse,
-            GetRiderResponse, OrderItem,
+            GetOwnersResponse, GetRiderResponse, OrderItem,
         };
 
         use super::*;
+
+        #[test]
+        fn test_get_owners() {
+            let (mut app, contract_addr) = proper_instantiate();
+
+            app.execute_contract(
+                Addr::unchecked(USER_2),
+                contract_addr.clone(),
+                &ExecuteMsg::AddNewOwner {
+                    new_owner: "xion1newowner".to_string(),
+                },
+                &[],
+            )
+            .unwrap();
+
+            let query_msg = QueryMsg::GetOwners {};
+            let res: GetOwnersResponse = app
+                .wrap()
+                .query_wasm_smart(contract_addr.clone(), &query_msg)
+                .unwrap();
+
+            assert_eq!(res.owners.len(), 2); // Initial owner + new owner
+            assert!(res.owners.contains(&"xion1adminaddress".to_string()));
+            assert!(res.owners.contains(&"xion1newowner".to_string()));
+        }
 
         #[test]
         fn test_register_and_get_restaurants() {

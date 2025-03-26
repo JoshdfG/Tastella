@@ -21,6 +21,11 @@ pub struct InstantiateMsg {
 }
 
 #[cw_serde]
+pub enum MigrateMsg {
+    ConvertToMultiOwner {},
+}
+
+#[cw_serde]
 pub enum ExecuteMsg {
     RegisterRestaurant {
         name: String,
@@ -65,6 +70,12 @@ pub enum ExecuteMsg {
     },
     DepositFunds {
         order_id: String,
+    },
+    AddNewOwner {
+        new_owner: String,
+    },
+    RemoveOwner {
+        owner: String,
     },
 }
 
@@ -115,6 +126,14 @@ pub enum QueryMsg {
         restaurant_id: String,
         items: Vec<OrderItem>,
     },
+
+    #[returns(GetOwnersResponse)]
+    GetOwners {},
+}
+
+#[cw_serde]
+pub struct GetOwnersResponse {
+    pub owners: Vec<String>,
 }
 #[cw_serde]
 pub struct GetOrderCostResponse {

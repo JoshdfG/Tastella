@@ -3,8 +3,8 @@ use crate::state::{Order, OrderStatus, Restaurant, ESCROWS, ORDERS, RESTAURANTS}
 use crate::{
     msg::{
         GetEscrowResponse, GetMenuItemsResponse, GetOrderCostResponse, GetOrderResponse,
-        GetOrdersResponse, GetRestaurantsResponse, GetRiderResponse, GetUserOrdersResponse,
-        GetUserRestaurantsResponse, OrderItem, PlatformConfigResponse,
+        GetOrdersResponse, GetOwnersResponse, GetRestaurantsResponse, GetRiderResponse,
+        GetUserOrdersResponse, GetUserRestaurantsResponse, OrderItem, PlatformConfigResponse,
     },
     state::{MenuItem, MENU_ITEMS, PLATFORM_CONFIG, RIDERS},
 };
@@ -15,15 +15,28 @@ use crate::msg::GetOrderStatusResponse;
 
 pub fn query_platform_config(deps: Deps) -> StdResult<PlatformConfigResponse> {
     let config = PLATFORM_CONFIG.load(deps.storage)?;
+    let owner_address = config
+        .owners
+        .get(0)
+        .map_or("".to_string(), |addr| addr.to_string());
     Ok(PlatformConfigResponse {
         platform_name: config.platform_name,
         platform_description: config.platform_description,
-        owner_address: config.owner_address.to_string(),
+        owner_address,
         fee_percentage: config.fee_percentage,
         fee_address: config.fee_address.to_string(),
     })
 }
 
+pub fn get_owners(deps: Deps) -> StdResult<GetOwnersResponse> {
+    let config = PLATFORM_CONFIG.load(deps.storage)?;
+    let owners = config
+        .owners
+        .into_iter()
+        .map(|addr| addr.to_string())
+        .collect();
+    Ok(GetOwnersResponse { owners })
+}
 pub fn get_all_restaurants(deps: Deps) -> StdResult<GetRestaurantsResponse> {
     let restaurants: Vec<Restaurant> = RESTAURANTS
         .range(deps.storage, None, None, cosmwasm_std::Order::Ascending)

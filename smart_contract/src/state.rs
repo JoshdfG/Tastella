@@ -60,10 +60,19 @@ pub enum OrderStatus {
 }
 
 #[cw_serde]
-pub struct PlatformConfig {
+pub struct OldPlatformConfig {
     pub platform_name: String,
     pub platform_description: String,
     pub owner_address: Addr,
+    pub fee_percentage: Decimal,
+    pub fee_address: Addr,
+}
+
+#[cw_serde]
+pub struct PlatformConfig {
+    pub platform_name: String,
+    pub platform_description: String,
+    pub owners: Vec<Addr>,
     pub fee_percentage: Decimal,
     pub fee_address: Addr,
 }
