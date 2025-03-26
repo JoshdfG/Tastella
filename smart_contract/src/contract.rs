@@ -123,20 +123,26 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetRiderById { rider_id } => to_json_binary(&get_rider(deps, rider_id)?),
 
         QueryMsg::GetRiderByAddress { riders_address } => {
-            to_json_binary(&get_rider_by_address(deps, riders_address)?)
+            let validated_riders_address = deps.api.addr_validate(&riders_address)?;
+
+            to_json_binary(&get_rider_by_address(deps, validated_riders_address)?)
         }
 
         QueryMsg::GetUserOwnedRestaurants { owner } => {
-            to_json_binary(&get_user_restaurants(deps, owner)?)
+            let validated_r_o_add = deps.api.addr_validate(&owner)?;
+
+            to_json_binary(&get_user_restaurants(deps, validated_r_o_add)?)
         }
 
         QueryMsg::GetUserOrders { address } => {
-            let response = get_user_orders(deps, address)?;
+            let validated_address = deps.api.addr_validate(&address)?;
+            let response = get_user_orders(deps, validated_address)?;
             to_json_binary(&response)
         }
 
         QueryMsg::GetLatestOrderId { address } => {
-            to_json_binary(&get_latest_order_id(deps, address)?)
+            let validated_address = deps.api.addr_validate(&address)?;
+            to_json_binary(&get_latest_order_id(deps, validated_address)?)
         }
 
         QueryMsg::GetOrderCost {

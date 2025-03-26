@@ -21,7 +21,7 @@ pub struct Restaurant {
     pub owner: Addr,
     pub name: String,
     pub image_uri: String,
-    pub restaurant_address: Addr,
+    pub restaurant_address: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]

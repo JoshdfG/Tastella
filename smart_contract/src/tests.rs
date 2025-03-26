@@ -56,7 +56,7 @@ mod tests {
             ExecuteMsg::RegisterRestaurant {
                 name: "Test Restaurant".to_string(),
                 image_uri: "https://test.com".to_string(),
-                restaurant_address,
+                restaurant_address: restaurant_address.to_string(),
             },
         )
         .unwrap();
@@ -77,7 +77,7 @@ mod tests {
         let msg = ExecuteMsg::RegisterRestaurant {
             name: "Test Restaurant".to_string(),
             image_uri: "https://test.com".to_string(),
-            restaurant_address,
+            restaurant_address: restaurant_address.to_string(),
         };
         execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
@@ -115,7 +115,7 @@ mod tests {
             ExecuteMsg::RegisterRestaurant {
                 name: "Test Restaurant".to_string(),
                 image_uri: "https://test.com".to_string(),
-                restaurant_address,
+                restaurant_address: restaurant_address.to_string(),
             },
         )
         .unwrap();
@@ -174,7 +174,7 @@ mod tests {
             ExecuteMsg::RegisterRestaurant {
                 name: "Test Restaurant".to_string(),
                 image_uri: "https://test.com".to_string(),
-                restaurant_address,
+                restaurant_address: restaurant_address.to_string(),
             },
         )
         .unwrap();
@@ -263,7 +263,7 @@ mod tests {
             ExecuteMsg::RegisterRestaurant {
                 name: "Test Restaurant".to_string(),
                 image_uri: "https://test.com".to_string(),
-                restaurant_address,
+                restaurant_address: restaurant_address.to_string(),
             },
         )
         .unwrap();
@@ -351,7 +351,7 @@ mod tests {
             ExecuteMsg::RegisterRestaurant {
                 name: "Test Restaurant".to_string(),
                 image_uri: "https://test.com".to_string(),
-                restaurant_address,
+                restaurant_address: restaurant_address.to_string(),
             },
         )
         .unwrap();
@@ -459,7 +459,7 @@ mod tests {
             ExecuteMsg::RegisterRestaurant {
                 name: "Test Restaurant".to_string(),
                 image_uri: "https://test.com".to_string(),
-                restaurant_address,
+                restaurant_address: restaurant_address.to_string(),
             },
         )
         .unwrap();
@@ -483,21 +483,21 @@ mod tests {
                 owner: Addr::unchecked("owner_1"),
                 name: "Restaurant One".to_string(),
                 image_uri: "https://test.com/restaurant1".to_string(),
-                restaurant_address: Addr::unchecked("q"),
+                restaurant_address: Addr::unchecked("q").to_string(),
             },
             Restaurant {
                 id: "restaurant_2".to_string(),
                 owner: Addr::unchecked("owner_2"),
                 name: "Restaurant Two".to_string(),
                 image_uri: "https://test.com/restaurant2".to_string(),
-                restaurant_address: Addr::unchecked("c"),
+                restaurant_address: Addr::unchecked("c").to_string(),
             },
             Restaurant {
                 id: "restaurant_3".to_string(),
                 owner: Addr::unchecked("owner_3"),
                 name: "Restaurant Three".to_string(),
                 image_uri: "https://test.com/restaurant3".to_string(),
-                restaurant_address: Addr::unchecked("a"),
+                restaurant_address: Addr::unchecked("a").to_string(),
             },
         ];
 
@@ -509,7 +509,7 @@ mod tests {
                 ExecuteMsg::RegisterRestaurant {
                     name: restaurant.name.clone(),
                     image_uri: restaurant.image_uri.clone(),
-                    restaurant_address: Addr::unchecked("q"),
+                    restaurant_address: Addr::unchecked("q").to_string(),
                 },
             )
             .unwrap();
@@ -531,7 +531,7 @@ mod tests {
         let msg = ExecuteMsg::RegisterRestaurant {
             name: "Test Restaurant".to_string(),
             image_uri: "https://test.com".to_string(),
-            restaurant_address,
+            restaurant_address: restaurant_address.to_string(),
         };
         execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
@@ -577,7 +577,7 @@ mod tests {
                 deps.as_ref(),
                 env.clone(),
                 QueryMsg::GetRiderByAddress {
-                    riders_address: Addr::unchecked("rider"),
+                    riders_address: Addr::unchecked("rider").to_string(),
                 },
             )
             .unwrap(),
@@ -597,7 +597,7 @@ mod tests {
             ExecuteMsg::RegisterRestaurant {
                 name: "Test Restaurant".to_string(),
                 image_uri: "https://test.com".to_string(),
-                restaurant_address,
+                restaurant_address: restaurant_address.to_string(),
             },
         )
         .unwrap();
@@ -607,7 +607,7 @@ mod tests {
                 deps.as_ref(),
                 env.clone(),
                 QueryMsg::GetUserOwnedRestaurants {
-                    owner: Addr::unchecked("creator"),
+                    owner: Addr::unchecked("creator").to_string(),
                 },
             )
             .unwrap(),
@@ -627,7 +627,7 @@ mod tests {
             ExecuteMsg::RegisterRestaurant {
                 name: "Test Restaurant".to_string(),
                 image_uri: "https://test.com".to_string(),
-                restaurant_address,
+                restaurant_address: restaurant_address.to_string(),
             },
         )
         .unwrap();
@@ -664,7 +664,7 @@ mod tests {
                 deps.as_ref(),
                 env.clone(),
                 QueryMsg::GetUserOrders {
-                    address: Addr::unchecked("customer"),
+                    address: Addr::unchecked("customer").to_string(),
                 },
             )
             .unwrap(),
@@ -687,7 +687,7 @@ mod tests {
             ExecuteMsg::RegisterRestaurant {
                 name: "Test Restaurant".to_string(),
                 image_uri: "https://test.com".to_string(),
-                restaurant_address,
+                restaurant_address: restaurant_address.to_string(),
             },
         )
         .unwrap();
@@ -746,7 +746,7 @@ mod tests {
             ExecuteMsg::RegisterRestaurant {
                 name: "Test Restaurant".to_string(),
                 image_uri: "https://test.com".to_string(),
-                restaurant_address,
+                restaurant_address: restaurant_address.to_string(),
             },
         )
         .unwrap();
@@ -788,7 +788,7 @@ mod tests {
             ExecuteMsg::RegisterRestaurant {
                 name: "Test Restaurant".to_string(),
                 image_uri: "https://test.com".to_string(),
-                restaurant_address,
+                restaurant_address: restaurant_address.to_string(),
             },
         )
         .unwrap();

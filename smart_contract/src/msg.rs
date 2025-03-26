@@ -1,6 +1,6 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 
-use cosmwasm_std::{Addr, Decimal, Uint128};
+use cosmwasm_std::{Decimal, Uint128};
 
 use crate::state::{Escrow, MenuItem, Order, OrderStatus, Restaurant, Rider};
 
@@ -15,9 +15,9 @@ pub struct OrderItem {
 pub struct InstantiateMsg {
     pub platform_name: String,
     pub platform_description: String,
-    pub owner_address: Addr,
+    pub owner_address: String,
     pub fee_percentage: Decimal,
-    pub fee_address: Addr,
+    pub fee_address: String,
 }
 
 #[cw_serde]
@@ -25,7 +25,7 @@ pub enum ExecuteMsg {
     RegisterRestaurant {
         name: String,
         image_uri: String,
-        restaurant_address: Addr,
+        restaurant_address: String,
     },
     RegisterRider {
         name: String,
@@ -99,16 +99,16 @@ pub enum QueryMsg {
     GetRiderById { rider_id: String },
 
     #[returns(GetRiderResponse)]
-    GetRiderByAddress { riders_address: Addr },
+    GetRiderByAddress { riders_address: String },
 
     #[returns(GetUserRestaurantsResponse)]
-    GetUserOwnedRestaurants { owner: Addr },
+    GetUserOwnedRestaurants { owner: String },
 
     #[returns(GetUserOrdersResponse)]
-    GetUserOrders { address: Addr },
+    GetUserOrders { address: String },
 
     #[returns(GetLatestOrderIdResponse)]
-    GetLatestOrderId { address: Addr },
+    GetLatestOrderId { address: String },
 
     #[returns(GetOrderCostResponse)]
     GetOrderCost {
@@ -179,7 +179,7 @@ pub struct GetOrderStatusResponse {
 pub struct PlatformConfigResponse {
     pub platform_name: String,
     pub platform_description: String,
-    pub owner_address: Addr,
+    pub owner_address: String,
     pub fee_percentage: Decimal,
-    pub fee_address: Addr,
+    pub fee_address: String,
 }
