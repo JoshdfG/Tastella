@@ -5,8 +5,8 @@ use cosmwasm_std::{BankMsg, Coin, StdResult};
 use crate::error::ContractError;
 use crate::msg::{GetLatestOrderIdResponse, OrderItem};
 use crate::state::{
-    Escrow, MenuItem, Order, OrderStatus, PlatformConfig, Restaurant, ESCROWS, ORDERS,
-    PLATFORM_CONFIG, RESTAURANTS, RIDERS,
+    Escrow, MenuItem, Order, OrderStatus, PlatformConfig, Restaurant, User, ESCROWS, ORDERS,
+    PLATFORM_CONFIG, RESTAURANTS, RIDERS, USERS,
 };
 use crate::state::{Rider, MENU_ITEMS};
 const NATIVE_DENOM: &str = "uxion";
@@ -29,13 +29,93 @@ pub fn init(
     let config = PlatformConfig {
         platform_name,
         platform_description,
-        owner_address: validated_owner,
+        owners: vec![validated_owner.clone()],
         fee_percentage,
         fee_address: validated_fee_address,
     };
     PLATFORM_CONFIG.save(deps.storage, &config)?;
 
     Ok(Response::new().add_attribute("action", "init"))
+}
+
+pub fn add_new_owner(
+    deps: DepsMut,
+    info: MessageInfo,
+    new_owner: String,
+) -> Result<Response, ContractError> {
+    let mut platform_config = PLATFORM_CONFIG.load(deps.storage)?;
+
+    if !platform_config.owners.contains(&info.sender) {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    let validated_owner = deps.api.addr_validate(&new_owner)?;
+    if platform_config.owners.contains(&validated_owner) {
+        return Err(ContractError::OwnerAlreadyExists {});
+    }
+
+    platform_config.owners.push(validated_owner.clone());
+    PLATFORM_CONFIG.save(deps.storage, &platform_config)?;
+
+    Ok(Response::new()
+        .add_attribute("action", "add_owner")
+        .add_attribute("new_owner", validated_owner.to_string()))
+}
+
+pub fn register_user(
+    deps: DepsMut,
+    info: MessageInfo,
+    name: String,
+    phone_number: String,
+) -> Result<Response, ContractError> {
+    let generated_id = format!("user_{}", info.sender);
+
+    if USERS
+        .may_load(deps.storage, &generated_id.clone())?
+        .is_some()
+    {
+        return Err(ContractError::UserAlreadyExists { id: generated_id });
+    }
+
+    let user = User {
+        id: generated_id.clone(),
+        name,
+        wallet: info.sender.clone(),
+        phone_number,
+        is_registered: true,
+    };
+
+    USERS.save(deps.storage, &generated_id.clone(), &user)?;
+
+    Ok(Response::new()
+        .add_attribute("action", "register_user")
+        .add_attribute("user_id", generated_id))
+}
+
+pub fn remove_owner(
+    deps: DepsMut,
+    info: MessageInfo,
+    owner_to_remove: String,
+) -> Result<Response, ContractError> {
+    let mut platform_config = PLATFORM_CONFIG.load(deps.storage)?;
+
+    if !platform_config.owners.contains(&info.sender) {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    let validated_owner = deps.api.addr_validate(&owner_to_remove)?;
+    if !platform_config.owners.contains(&validated_owner) {
+        return Err(ContractError::OwnerDoesNotExist {});
+    }
+
+    platform_config
+        .owners
+        .retain(|owner| owner != &validated_owner);
+    PLATFORM_CONFIG.save(deps.storage, &platform_config)?;
+
+    Ok(Response::new()
+        .add_attribute("action", "remove_owner")
+        .add_attribute("owner_to_remove", validated_owner.to_string()))
 }
 pub fn register_restaurant(
     deps: DepsMut,
@@ -111,16 +191,13 @@ pub fn update_menu_item(
 ) -> Result<Response, ContractError> {
     let restaurant_id = format!("restaurant_{}", info.sender);
 
-    // Verify restaurant exists and sender is owner
     RESTAURANTS.load(deps.storage, &restaurant_id)?;
 
-    // Load existing menu item
     let key = (restaurant_id.as_str(), item_id.as_str());
     let mut menu_item = MENU_ITEMS
         .load(deps.storage, key)
         .map_err(|_| ContractError::MenuItemNotFound {})?;
 
-    // Update fields if provided
     if let Some(new_name) = name {
         menu_item.name = new_name;
     }
@@ -134,7 +211,6 @@ pub fn update_menu_item(
         menu_item.image_uri = new_image_uri;
     }
 
-    // Save updated menu item
     MENU_ITEMS.save(deps.storage, key, &menu_item)?;
 
     Ok(Response::new()
@@ -344,20 +420,30 @@ pub fn register_rider(
     deps: DepsMut,
     info: MessageInfo,
     name: String,
+    phone_number: String,
 ) -> Result<Response, ContractError> {
-    let rider_id = format!("rider_{}", info.sender);
+    let generated_id = format!("rider_{}", info.sender);
+
+    if RIDERS
+        .may_load(deps.storage, &generated_id.clone())?
+        .is_some()
+    {
+        return Err(ContractError::RiderAlreadyExists { id: generated_id });
+    }
+
     let rider = Rider {
-        id: rider_id.clone(),
+        id: generated_id.clone(),
         name,
-        wallet: info.sender,
+        wallet: info.sender.clone(),
+        phone_number,
         is_registered: true,
     };
 
-    RIDERS.save(deps.storage, &rider_id, &rider)?;
+    RIDERS.save(deps.storage, &generated_id.clone(), &rider)?;
 
     Ok(Response::new()
         .add_attribute("action", "register_rider")
-        .add_attribute("rider_id", rider_id))
+        .add_attribute("rider_id", generated_id))
 }
 
 pub fn assign_rider(

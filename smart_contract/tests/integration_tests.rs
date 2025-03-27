@@ -16,7 +16,7 @@ mod tests {
     }
 
     const USER: &str = "xion1useraddress";
-    const ADMIN: &str = "xion1adminaddress";
+    const USER_2: &str = "xion1adminaddress";
     const NATIVE_DENOM: &str = "uxion";
 
     lazy_static! {
@@ -89,9 +89,24 @@ mod tests {
         .unwrap();
     }
 
+    fn register_user(app: &mut App, name: &str, phone_number: &str) {
+        let register_msg = ExecuteMsg::RegisterUser {
+            name: name.to_string(),
+            phone_number: phone_number.to_string(),
+        };
+        app.execute_contract(
+            Addr::unchecked(USER),
+            Addr::unchecked(USER),
+            &register_msg,
+            &[],
+        )
+        .unwrap();
+    }
+
     fn register_rider(app: &mut App, contract_addr: &Addr, user: &str, name: String) {
         let register_rider_msg = ExecuteMsg::RegisterRider {
             name: name.to_string(),
+            phone_number: "1234567890".to_string(),
         };
         app.execute_contract(
             Addr::unchecked(user),
@@ -150,12 +165,38 @@ mod tests {
 
     mod restaurant_tests {
 
+        use cosmwasm_std::Attribute;
         use tastella::msg::{
             GetMenuItemsResponse, GetOrderCostResponse, GetOrderStatusResponse, GetOrdersResponse,
-            GetRiderResponse, OrderItem,
+            GetOwnersResponse, GetRiderResponse, OrderItem, UserResponse,
         };
 
         use super::*;
+
+        #[test]
+        fn test_get_owners() {
+            let (mut app, contract_addr) = proper_instantiate();
+
+            app.execute_contract(
+                Addr::unchecked(USER_2),
+                contract_addr.clone(),
+                &ExecuteMsg::AddNewOwner {
+                    new_owner: "xion1newowner".to_string(),
+                },
+                &[],
+            )
+            .unwrap();
+
+            let query_msg = QueryMsg::GetOwners {};
+            let res: GetOwnersResponse = app
+                .wrap()
+                .query_wasm_smart(contract_addr.clone(), &query_msg)
+                .unwrap();
+
+            assert_eq!(res.owners.len(), 2);
+            assert!(res.owners.contains(&"xion1adminaddress".to_string()));
+            assert!(res.owners.contains(&"xion1newowner".to_string()));
+        }
 
         #[test]
         fn test_register_and_get_restaurants() {
@@ -636,6 +677,39 @@ mod tests {
                 .query_balance(&restaurant_address, "uxion")
                 .unwrap();
             assert_eq!(restaurant_balance.amount, Uint128::new(190));
+        }
+
+        #[test]
+        fn test_user_registration() {
+            let (mut app, contract_addr) = proper_instantiate();
+            let sender = "xion1useraddress";
+            let generated_id = format!("user_{}", sender);
+
+            let res = app
+                .execute_contract(
+                    Addr::unchecked(sender),
+                    Addr::unchecked(contract_addr.clone()),
+                    &ExecuteMsg::RegisterUser {
+                        name: "Test User".to_string(),
+                        phone_number: "1234567890".to_string(),
+                    },
+                    &[],
+                )
+                .unwrap();
+
+            let get_user = QueryMsg::GetUser {
+                id: generated_id.clone(),
+            };
+            let response: UserResponse = app
+                .wrap()
+                .query_wasm_smart(contract_addr.clone(), &get_user)
+                .unwrap();
+
+            assert_eq!(response.name, "Test User");
+            assert_eq!(response.wallet, sender);
+            assert_eq!(response.id, generated_id);
+            assert_eq!(response.phone_number, "1234567890");
+            assert_eq!(response.is_registered, true);
         }
     }
 }

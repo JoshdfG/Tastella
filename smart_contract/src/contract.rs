@@ -1,11 +1,13 @@
 #[cfg(not(feature = "library"))]
 use crate::error::ContractError;
 use crate::execute::{self, get_latest_order_id, init, update_menu_item};
-use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use crate::migrate;
+use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::query::{
     get_all_restaurants, get_escrow, get_menu_items_for_restaurant, get_order_by_id,
-    get_order_cost, get_order_status, get_order_status_by_id, get_orders_for_restaurant, get_rider,
-    get_rider_by_address, get_user_orders, get_user_restaurants, query_platform_config,
+    get_order_cost, get_order_status, get_order_status_by_id, get_orders_for_restaurant,
+    get_owners, get_rider, get_rider_by_address, get_user, get_user_orders, get_user_restaurants,
+    query_platform_config,
 };
 
 use cosmwasm_std::entry_point;
@@ -38,6 +40,14 @@ pub fn instantiate(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
+pub fn migrate(deps: DepsMut, env: Env, msg: MigrateMsg) -> Result<Response, ContractError> {
+    match msg {
+        MigrateMsg::ConvertToMultiOwner {} => migrate::migrate(deps, env, msg),
+        MigrateMsg::UpdateRidersAndUsers {} => migrate::update_rider_and_add_user(deps, env),
+    }
+}
+
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
     env: Env,
@@ -51,7 +61,13 @@ pub fn execute(
             restaurant_address,
         } => execute::register_restaurant(deps, info, name, image_uri, restaurant_address),
 
-        ExecuteMsg::RegisterRider { name } => execute::register_rider(deps, info, name),
+        ExecuteMsg::RegisterRider { name, phone_number } => {
+            execute::register_rider(deps, info, name, phone_number)
+        }
+
+        ExecuteMsg::RegisterUser { name, phone_number } => {
+            execute::register_user(deps, info, name, phone_number)
+        }
 
         ExecuteMsg::CreateOrder {
             restaurant_id,
@@ -90,6 +106,10 @@ pub fn execute(
         ExecuteMsg::ConfirmDelivery { order_id } => {
             execute::confirm_delivery(deps, env, info, order_id)
         }
+
+        ExecuteMsg::AddNewOwner { new_owner } => execute::add_new_owner(deps, info, new_owner),
+
+        ExecuteMsg::RemoveOwner { owner } => execute::remove_owner(deps, info, owner),
     }
 }
 
@@ -97,6 +117,10 @@ pub fn execute(
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetPlatformConfig {} => to_json_binary(&query_platform_config(deps)?),
+
+        QueryMsg::GetOwners {} => to_json_binary(&get_owners(deps)?),
+
+        QueryMsg::GetUser { id } => to_json_binary(&get_user(deps, id)?),
 
         QueryMsg::GetRestaurants {} => to_json_binary(&get_all_restaurants(deps)?),
 

@@ -21,14 +21,17 @@ pub struct InstantiateMsg {
 }
 
 #[cw_serde]
+pub enum MigrateMsg {
+    ConvertToMultiOwner {},
+    UpdateRidersAndUsers {},
+}
+
+#[cw_serde]
 pub enum ExecuteMsg {
     RegisterRestaurant {
         name: String,
         image_uri: String,
         restaurant_address: String,
-    },
-    RegisterRider {
-        name: String,
     },
     AddMenuItem {
         item_id: String,
@@ -66,6 +69,20 @@ pub enum ExecuteMsg {
     DepositFunds {
         order_id: String,
     },
+    AddNewOwner {
+        new_owner: String,
+    },
+    RemoveOwner {
+        owner: String,
+    },
+    RegisterRider {
+        name: String,
+        phone_number: String,
+    },
+    RegisterUser {
+        name: String,
+        phone_number: String,
+    },
 }
 
 #[cw_serde]
@@ -95,7 +112,7 @@ pub enum QueryMsg {
     #[returns(PlatformConfigResponse)]
     GetPlatformConfig {},
 
-    #[returns(Rider)]
+    #[returns(GetRiderResponse)]
     GetRiderById { rider_id: String },
 
     #[returns(GetRiderResponse)]
@@ -115,6 +132,26 @@ pub enum QueryMsg {
         restaurant_id: String,
         items: Vec<OrderItem>,
     },
+
+    #[returns(GetOwnersResponse)]
+    GetOwners {},
+
+    #[returns(UserResponse)]
+    GetUser { id: String },
+}
+
+#[cw_serde]
+pub struct UserResponse {
+    pub id: String,
+    pub name: String,
+    pub wallet: String,
+    pub phone_number: String,
+    pub is_registered: bool,
+}
+
+#[cw_serde]
+pub struct GetOwnersResponse {
+    pub owners: Vec<String>,
 }
 #[cw_serde]
 pub struct GetOrderCostResponse {
