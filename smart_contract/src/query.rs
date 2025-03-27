@@ -2,10 +2,10 @@
 use crate::state::{Order, OrderStatus, Restaurant, ESCROWS, ORDERS, RESTAURANTS};
 use crate::{
     msg::{
-        GetEscrowResponse, GetMenuItemsResponse, GetOrderCostResponse, GetOrderResponse,
-        GetOrdersResponse, GetOwnersResponse, GetRestaurantsResponse, GetRiderResponse,
-        GetUserOrdersResponse, GetUserRestaurantsResponse, OrderItem, PlatformConfigResponse,
-        UserResponse,
+        GetEscrowResponse, GetLatestOrderIdResponse, GetMenuItemsResponse, GetOrderCostResponse,
+        GetOrderResponse, GetOrdersResponse, GetOwnersResponse, GetRestaurantsResponse,
+        GetRiderResponse, GetUserOrdersResponse, GetUserRestaurantsResponse, OrderItem,
+        PlatformConfigResponse, UserResponse,
     },
     state::{MenuItem, MENU_ITEMS, PLATFORM_CONFIG, RIDERS, USERS},
 };
@@ -186,4 +186,22 @@ pub fn get_order_cost(
         return Err(StdError::generic_err("Invalid order amount"));
     }
     Ok(GetOrderCostResponse { total })
+}
+
+pub fn get_latest_order_id(deps: Deps, address: Addr) -> StdResult<GetLatestOrderIdResponse> {
+    let latest_order = ORDERS
+        .range(deps.storage, None, None, cosmwasm_std::Order::Descending)
+        .filter_map(|item| {
+            let (id, order) = item.unwrap();
+            if order.customer == address {
+                Some(id)
+            } else {
+                None
+            }
+        })
+        .next();
+
+    Ok(GetLatestOrderIdResponse {
+        order_id: latest_order,
+    })
 }

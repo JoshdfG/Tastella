@@ -89,20 +89,6 @@ mod tests {
         .unwrap();
     }
 
-    fn register_user(app: &mut App, name: &str, phone_number: &str) {
-        let register_msg = ExecuteMsg::RegisterUser {
-            name: name.to_string(),
-            phone_number: phone_number.to_string(),
-        };
-        app.execute_contract(
-            Addr::unchecked(USER),
-            Addr::unchecked(USER),
-            &register_msg,
-            &[],
-        )
-        .unwrap();
-    }
-
     fn register_rider(app: &mut App, contract_addr: &Addr, user: &str, name: String) {
         let register_rider_msg = ExecuteMsg::RegisterRider {
             name: name.to_string(),
@@ -165,7 +151,6 @@ mod tests {
 
     mod restaurant_tests {
 
-        use cosmwasm_std::Attribute;
         use tastella::msg::{
             GetMenuItemsResponse, GetOrderCostResponse, GetOrderStatusResponse, GetOrdersResponse,
             GetOwnersResponse, GetRiderResponse, OrderItem, UserResponse,
@@ -685,7 +670,7 @@ mod tests {
             let sender = "xion1useraddress";
             let generated_id = format!("user_{}", sender);
 
-            let res = app
+            let _res = app
                 .execute_contract(
                     Addr::unchecked(sender),
                     Addr::unchecked(contract_addr.clone()),
