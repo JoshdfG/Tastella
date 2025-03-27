@@ -1,9 +1,9 @@
+use cosmwasm_std::{BankMsg, Coin};
 #[cfg(not(feature = "library"))]
-use cosmwasm_std::{Addr, Decimal, Deps, DepsMut, Env, MessageInfo, Response, Uint128};
-use cosmwasm_std::{BankMsg, Coin, StdResult};
+use cosmwasm_std::{Decimal, DepsMut, Env, MessageInfo, Response, Uint128};
 
 use crate::error::ContractError;
-use crate::msg::{GetLatestOrderIdResponse, OrderItem};
+use crate::msg::OrderItem;
 use crate::state::{
     Escrow, MenuItem, Order, OrderStatus, PlatformConfig, Restaurant, User, ESCROWS, ORDERS,
     PLATFORM_CONFIG, RESTAURANTS, RIDERS, USERS,
@@ -484,22 +484,4 @@ pub fn deposit_funds(
 
     ESCROWS.save(deps.storage, &order_id, &escrow)?;
     Ok(Response::new().add_attribute("action", "deposit_funds"))
-}
-
-pub fn get_latest_order_id(deps: Deps, address: Addr) -> StdResult<GetLatestOrderIdResponse> {
-    let latest_order = ORDERS
-        .range(deps.storage, None, None, cosmwasm_std::Order::Descending)
-        .filter_map(|item| {
-            let (id, order) = item.unwrap();
-            if order.customer == address {
-                Some(id)
-            } else {
-                None
-            }
-        })
-        .next();
-
-    Ok(GetLatestOrderIdResponse {
-        order_id: latest_order,
-    })
 }
