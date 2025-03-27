@@ -1,0 +1,1581 @@
+{
+  "contract_name": "tastella",
+  "contract_version": "0.1.0",
+  "idl_version": "1.0.0",
+  "instantiate": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "InstantiateMsg",
+    "type": "object",
+    "required": [
+      "fee_address",
+      "fee_percentage",
+      "owner_address",
+      "platform_description",
+      "platform_name"
+    ],
+    "properties": {
+      "fee_address": {
+        "type": "string"
+      },
+      "fee_percentage": {
+        "$ref": "#/definitions/Decimal"
+      },
+      "owner_address": {
+        "type": "string"
+      },
+      "platform_description": {
+        "type": "string"
+      },
+      "platform_name": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "definitions": {
+      "Decimal": {
+        "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
+        "type": "string"
+      }
+    }
+  },
+  "execute": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ExecuteMsg",
+    "oneOf": [
+      {
+        "type": "object",
+        "required": [
+          "register_restaurant"
+        ],
+        "properties": {
+          "register_restaurant": {
+            "type": "object",
+            "required": [
+              "image_uri",
+              "name",
+              "restaurant_address"
+            ],
+            "properties": {
+              "image_uri": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "restaurant_address": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "add_menu_item"
+        ],
+        "properties": {
+          "add_menu_item": {
+            "type": "object",
+            "required": [
+              "image_uri",
+              "item_id",
+              "name",
+              "price"
+            ],
+            "properties": {
+              "image_uri": {
+                "type": "string"
+              },
+              "item_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "price": {
+                "$ref": "#/definitions/Uint128"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "remove_menu_item"
+        ],
+        "properties": {
+          "remove_menu_item": {
+            "type": "object",
+            "required": [
+              "item_id"
+            ],
+            "properties": {
+              "item_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "update_menu_item"
+        ],
+        "properties": {
+          "update_menu_item": {
+            "type": "object",
+            "required": [
+              "item_id"
+            ],
+            "properties": {
+              "available": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "image_uri": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "item_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "price": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Uint128"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "toggle_menu_item_availability"
+        ],
+        "properties": {
+          "toggle_menu_item_availability": {
+            "type": "object",
+            "required": [
+              "item_id"
+            ],
+            "properties": {
+              "item_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "create_order"
+        ],
+        "properties": {
+          "create_order": {
+            "type": "object",
+            "required": [
+              "items",
+              "restaurant_id"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/OrderItem"
+                }
+              },
+              "restaurant_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "accept_order"
+        ],
+        "properties": {
+          "accept_order": {
+            "type": "object",
+            "required": [
+              "order_id"
+            ],
+            "properties": {
+              "order_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "assign_rider"
+        ],
+        "properties": {
+          "assign_rider": {
+            "type": "object",
+            "required": [
+              "order_id",
+              "rider_id"
+            ],
+            "properties": {
+              "order_id": {
+                "type": "string"
+              },
+              "rider_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "confirm_delivery"
+        ],
+        "properties": {
+          "confirm_delivery": {
+            "type": "object",
+            "required": [
+              "order_id"
+            ],
+            "properties": {
+              "order_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "deposit_funds"
+        ],
+        "properties": {
+          "deposit_funds": {
+            "type": "object",
+            "required": [
+              "order_id"
+            ],
+            "properties": {
+              "order_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "add_new_owner"
+        ],
+        "properties": {
+          "add_new_owner": {
+            "type": "object",
+            "required": [
+              "new_owner"
+            ],
+            "properties": {
+              "new_owner": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "remove_owner"
+        ],
+        "properties": {
+          "remove_owner": {
+            "type": "object",
+            "required": [
+              "owner"
+            ],
+            "properties": {
+              "owner": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "register_rider"
+        ],
+        "properties": {
+          "register_rider": {
+            "type": "object",
+            "required": [
+              "name",
+              "phone_number"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "phone_number": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "register_user"
+        ],
+        "properties": {
+          "register_user": {
+            "type": "object",
+            "required": [
+              "name",
+              "phone_number"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "phone_number": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "definitions": {
+      "OrderItem": {
+        "type": "object",
+        "required": [
+          "item_id",
+          "quantity"
+        ],
+        "properties": {
+          "item_id": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          }
+        },
+        "additionalProperties": false
+      },
+      "Uint128": {
+        "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+        "type": "string"
+      }
+    }
+  },
+  "query": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "QueryMsg",
+    "oneOf": [
+      {
+        "type": "object",
+        "required": [
+          "get_restaurants"
+        ],
+        "properties": {
+          "get_restaurants": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_menu_items"
+        ],
+        "properties": {
+          "get_menu_items": {
+            "type": "object",
+            "required": [
+              "restaurant_id"
+            ],
+            "properties": {
+              "restaurant_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_orders_from_a_restaurant"
+        ],
+        "properties": {
+          "get_orders_from_a_restaurant": {
+            "type": "object",
+            "required": [
+              "restaurant_id"
+            ],
+            "properties": {
+              "restaurant_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_order_details"
+        ],
+        "properties": {
+          "get_order_details": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_all_successful_order_status"
+        ],
+        "properties": {
+          "get_all_successful_order_status": {
+            "type": "object",
+            "required": [
+              "is_delivered"
+            ],
+            "properties": {
+              "is_delivered": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_order_status_by_id"
+        ],
+        "properties": {
+          "get_order_status_by_id": {
+            "type": "object",
+            "required": [
+              "order_id"
+            ],
+            "properties": {
+              "order_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_escrow"
+        ],
+        "properties": {
+          "get_escrow": {
+            "type": "object",
+            "required": [
+              "order_id"
+            ],
+            "properties": {
+              "order_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_platform_config"
+        ],
+        "properties": {
+          "get_platform_config": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_rider_by_id"
+        ],
+        "properties": {
+          "get_rider_by_id": {
+            "type": "object",
+            "required": [
+              "rider_id"
+            ],
+            "properties": {
+              "rider_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_rider_by_address"
+        ],
+        "properties": {
+          "get_rider_by_address": {
+            "type": "object",
+            "required": [
+              "riders_address"
+            ],
+            "properties": {
+              "riders_address": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_user_owned_restaurants"
+        ],
+        "properties": {
+          "get_user_owned_restaurants": {
+            "type": "object",
+            "required": [
+              "owner"
+            ],
+            "properties": {
+              "owner": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_user_orders"
+        ],
+        "properties": {
+          "get_user_orders": {
+            "type": "object",
+            "required": [
+              "address"
+            ],
+            "properties": {
+              "address": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_latest_order_id"
+        ],
+        "properties": {
+          "get_latest_order_id": {
+            "type": "object",
+            "required": [
+              "address"
+            ],
+            "properties": {
+              "address": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_order_cost"
+        ],
+        "properties": {
+          "get_order_cost": {
+            "type": "object",
+            "required": [
+              "items",
+              "restaurant_id"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/OrderItem"
+                }
+              },
+              "restaurant_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_owners"
+        ],
+        "properties": {
+          "get_owners": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_user"
+        ],
+        "properties": {
+          "get_user": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "definitions": {
+      "OrderItem": {
+        "type": "object",
+        "required": [
+          "item_id",
+          "quantity"
+        ],
+        "properties": {
+          "item_id": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "migrate": null,
+  "sudo": null,
+  "responses": {
+    "get_all_successful_order_status": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetOrderStatus",
+      "type": "object",
+      "required": [
+        "order"
+      ],
+      "properties": {
+        "order": {
+          "$ref": "#/definitions/Order"
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Order": {
+          "type": "object",
+          "required": [
+            "customer",
+            "id",
+            "items",
+            "restaurant_id",
+            "status",
+            "total"
+          ],
+          "properties": {
+            "customer": {
+              "$ref": "#/definitions/Addr"
+            },
+            "id": {
+              "type": "string"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/OrderItem"
+              }
+            },
+            "restaurant_id": {
+              "type": "string"
+            },
+            "rider_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "$ref": "#/definitions/OrderStatus"
+            },
+            "total": {
+              "$ref": "#/definitions/Uint128"
+            }
+          }
+        },
+        "OrderItem": {
+          "type": "object",
+          "required": [
+            "item_id",
+            "quantity"
+          ],
+          "properties": {
+            "item_id": {
+              "type": "string"
+            },
+            "quantity": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          },
+          "additionalProperties": false
+        },
+        "OrderStatus": {
+          "type": "string",
+          "enum": [
+            "Created",
+            "Accepted",
+            "InDelivery",
+            "Completed",
+            "Cancelled"
+          ]
+        },
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "get_escrow": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Escrow",
+      "type": "object",
+      "required": [
+        "amount",
+        "order_id",
+        "released"
+      ],
+      "properties": {
+        "amount": {
+          "$ref": "#/definitions/Uint128"
+        },
+        "order_id": {
+          "type": "string"
+        },
+        "released": {
+          "type": "boolean"
+        }
+      },
+      "definitions": {
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "get_latest_order_id": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetLatestOrderIdResponse",
+      "type": "object",
+      "properties": {
+        "order_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "get_menu_items": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetMenuItemsResponse",
+      "type": "object",
+      "required": [
+        "menu_items"
+      ],
+      "properties": {
+        "menu_items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MenuItem"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "MenuItem": {
+          "type": "object",
+          "required": [
+            "available",
+            "id",
+            "image_uri",
+            "name",
+            "price"
+          ],
+          "properties": {
+            "available": {
+              "type": "boolean"
+            },
+            "id": {
+              "type": "string"
+            },
+            "image_uri": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "price": {
+              "$ref": "#/definitions/Uint128"
+            }
+          }
+        },
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "get_order_cost": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetOrderCostResponse",
+      "type": "object",
+      "required": [
+        "total"
+      ],
+      "properties": {
+        "total": {
+          "$ref": "#/definitions/Uint128"
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "get_order_details": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetOrderResponse",
+      "type": "object",
+      "required": [
+        "order"
+      ],
+      "properties": {
+        "order": {
+          "$ref": "#/definitions/Order"
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Order": {
+          "type": "object",
+          "required": [
+            "customer",
+            "id",
+            "items",
+            "restaurant_id",
+            "status",
+            "total"
+          ],
+          "properties": {
+            "customer": {
+              "$ref": "#/definitions/Addr"
+            },
+            "id": {
+              "type": "string"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/OrderItem"
+              }
+            },
+            "restaurant_id": {
+              "type": "string"
+            },
+            "rider_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "$ref": "#/definitions/OrderStatus"
+            },
+            "total": {
+              "$ref": "#/definitions/Uint128"
+            }
+          }
+        },
+        "OrderItem": {
+          "type": "object",
+          "required": [
+            "item_id",
+            "quantity"
+          ],
+          "properties": {
+            "item_id": {
+              "type": "string"
+            },
+            "quantity": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          },
+          "additionalProperties": false
+        },
+        "OrderStatus": {
+          "type": "string",
+          "enum": [
+            "Created",
+            "Accepted",
+            "InDelivery",
+            "Completed",
+            "Cancelled"
+          ]
+        },
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "get_order_status_by_id": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetOrderStatusResponse",
+      "type": "object",
+      "required": [
+        "order_id",
+        "status"
+      ],
+      "properties": {
+        "order_id": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/OrderStatus"
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "OrderStatus": {
+          "type": "string",
+          "enum": [
+            "Created",
+            "Accepted",
+            "InDelivery",
+            "Completed",
+            "Cancelled"
+          ]
+        }
+      }
+    },
+    "get_orders_from_a_restaurant": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetOrdersResponse",
+      "type": "object",
+      "required": [
+        "orders"
+      ],
+      "properties": {
+        "orders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Order"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Order": {
+          "type": "object",
+          "required": [
+            "customer",
+            "id",
+            "items",
+            "restaurant_id",
+            "status",
+            "total"
+          ],
+          "properties": {
+            "customer": {
+              "$ref": "#/definitions/Addr"
+            },
+            "id": {
+              "type": "string"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/OrderItem"
+              }
+            },
+            "restaurant_id": {
+              "type": "string"
+            },
+            "rider_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "$ref": "#/definitions/OrderStatus"
+            },
+            "total": {
+              "$ref": "#/definitions/Uint128"
+            }
+          }
+        },
+        "OrderItem": {
+          "type": "object",
+          "required": [
+            "item_id",
+            "quantity"
+          ],
+          "properties": {
+            "item_id": {
+              "type": "string"
+            },
+            "quantity": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          },
+          "additionalProperties": false
+        },
+        "OrderStatus": {
+          "type": "string",
+          "enum": [
+            "Created",
+            "Accepted",
+            "InDelivery",
+            "Completed",
+            "Cancelled"
+          ]
+        },
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "get_owners": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetOwnersResponse",
+      "type": "object",
+      "required": [
+        "owners"
+      ],
+      "properties": {
+        "owners": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "get_platform_config": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PlatformConfigResponse",
+      "type": "object",
+      "required": [
+        "fee_address",
+        "fee_percentage",
+        "owner_address",
+        "platform_description",
+        "platform_name"
+      ],
+      "properties": {
+        "fee_address": {
+          "type": "string"
+        },
+        "fee_percentage": {
+          "$ref": "#/definitions/Decimal"
+        },
+        "owner_address": {
+          "type": "string"
+        },
+        "platform_description": {
+          "type": "string"
+        },
+        "platform_name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Decimal": {
+          "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
+          "type": "string"
+        }
+      }
+    },
+    "get_restaurants": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetRestaurantsResponse",
+      "type": "object",
+      "required": [
+        "restaurants"
+      ],
+      "properties": {
+        "restaurants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Restaurant"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Restaurant": {
+          "type": "object",
+          "required": [
+            "id",
+            "image_uri",
+            "name",
+            "owner",
+            "restaurant_address"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "image_uri": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "owner": {
+              "$ref": "#/definitions/Addr"
+            },
+            "restaurant_address": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "get_rider_by_address": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetRiderResponse",
+      "type": "object",
+      "properties": {
+        "rider": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Rider"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Rider": {
+          "type": "object",
+          "required": [
+            "id",
+            "is_registered",
+            "name",
+            "phone_number",
+            "wallet"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "is_registered": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string"
+            },
+            "phone_number": {
+              "type": "string"
+            },
+            "wallet": {
+              "$ref": "#/definitions/Addr"
+            }
+          }
+        }
+      }
+    },
+    "get_rider_by_id": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetRiderResponse",
+      "type": "object",
+      "properties": {
+        "rider": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Rider"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Rider": {
+          "type": "object",
+          "required": [
+            "id",
+            "is_registered",
+            "name",
+            "phone_number",
+            "wallet"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "is_registered": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string"
+            },
+            "phone_number": {
+              "type": "string"
+            },
+            "wallet": {
+              "$ref": "#/definitions/Addr"
+            }
+          }
+        }
+      }
+    },
+    "get_user": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserResponse",
+      "type": "object",
+      "required": [
+        "id",
+        "is_registered",
+        "name",
+        "phone_number",
+        "wallet"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "is_registered": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
+        },
+        "wallet": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "get_user_orders": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetUserOrdersResponse",
+      "type": "object",
+      "required": [
+        "orders"
+      ],
+      "properties": {
+        "orders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Order"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Order": {
+          "type": "object",
+          "required": [
+            "customer",
+            "id",
+            "items",
+            "restaurant_id",
+            "status",
+            "total"
+          ],
+          "properties": {
+            "customer": {
+              "$ref": "#/definitions/Addr"
+            },
+            "id": {
+              "type": "string"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/OrderItem"
+              }
+            },
+            "restaurant_id": {
+              "type": "string"
+            },
+            "rider_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "$ref": "#/definitions/OrderStatus"
+            },
+            "total": {
+              "$ref": "#/definitions/Uint128"
+            }
+          }
+        },
+        "OrderItem": {
+          "type": "object",
+          "required": [
+            "item_id",
+            "quantity"
+          ],
+          "properties": {
+            "item_id": {
+              "type": "string"
+            },
+            "quantity": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          },
+          "additionalProperties": false
+        },
+        "OrderStatus": {
+          "type": "string",
+          "enum": [
+            "Created",
+            "Accepted",
+            "InDelivery",
+            "Completed",
+            "Cancelled"
+          ]
+        },
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "get_user_owned_restaurants": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GetUserRestaurantsResponse",
+      "type": "object",
+      "required": [
+        "restaurants"
+      ],
+      "properties": {
+        "restaurants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Restaurant"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Restaurant": {
+          "type": "object",
+          "required": [
+            "id",
+            "image_uri",
+            "name",
+            "owner",
+            "restaurant_address"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "image_uri": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "owner": {
+              "$ref": "#/definitions/Addr"
+            },
+            "restaurant_address": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

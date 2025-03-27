@@ -235,6 +235,7 @@ mod tests {
             mock_info("rider", &[]),
             ExecuteMsg::RegisterRider {
                 name: "Test Rider".to_string(),
+                phone_number: "1234567890".to_string(),
             },
         )
         .unwrap();
@@ -311,6 +312,7 @@ mod tests {
             mock_info("rider", &[]),
             ExecuteMsg::RegisterRider {
                 name: "Test Rider".to_string(),
+                phone_number: "1234567890".to_string(),
             },
         )
         .unwrap();
@@ -408,6 +410,7 @@ mod tests {
             mock_info("rider", &[]),
             ExecuteMsg::RegisterRider {
                 name: "Test Rider".to_string(),
+                phone_number: "1234567890".to_string(),
             },
         )
         .unwrap();
@@ -568,6 +571,7 @@ mod tests {
             mock_info("rider", &[]),
             ExecuteMsg::RegisterRider {
                 name: "Test Rider".to_string(),
+                phone_number: "1234567890".to_string(),
             },
         )
         .unwrap();

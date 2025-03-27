@@ -36,10 +36,28 @@ pub struct Order {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct OldRider {
+    pub id: String,
+    pub name: String,
+    pub wallet: Addr,
+    pub is_registered: bool,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct Rider {
     pub id: String,
     pub name: String,
     pub wallet: Addr,
+    pub phone_number: String,
+    pub is_registered: bool,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct User {
+    pub id: String,
+    pub name: String,
+    pub wallet: Addr,
+    pub phone_number: String,
     pub is_registered: bool,
 }
 
@@ -83,3 +101,4 @@ pub const MENU_ITEMS: Map<(&str, &str), MenuItem> = Map::new("menu_items");
 pub const RIDERS: Map<&str, Rider> = Map::new("riders");
 pub const ORDERS: Map<&str, Order> = Map::new("orders");
 pub const ESCROWS: Map<&str, Escrow> = Map::new("escrows");
+pub const USERS: Map<&str, User> = Map::new("users");

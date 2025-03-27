@@ -5,8 +5,9 @@ use crate::{
         GetEscrowResponse, GetMenuItemsResponse, GetOrderCostResponse, GetOrderResponse,
         GetOrdersResponse, GetOwnersResponse, GetRestaurantsResponse, GetRiderResponse,
         GetUserOrdersResponse, GetUserRestaurantsResponse, OrderItem, PlatformConfigResponse,
+        UserResponse,
     },
-    state::{MenuItem, MENU_ITEMS, PLATFORM_CONFIG, RIDERS},
+    state::{MenuItem, MENU_ITEMS, PLATFORM_CONFIG, RIDERS, USERS},
 };
 
 use cosmwasm_std::{Addr, Deps, StdError, StdResult, Uint128};
@@ -36,6 +37,17 @@ pub fn get_owners(deps: Deps) -> StdResult<GetOwnersResponse> {
         .map(|addr| addr.to_string())
         .collect();
     Ok(GetOwnersResponse { owners })
+}
+
+pub fn get_user(deps: Deps, id: String) -> StdResult<UserResponse> {
+    let user = USERS.load(deps.storage, &id.clone())?;
+    Ok(UserResponse {
+        id,
+        name: user.name,
+        wallet: user.wallet.to_string(),
+        phone_number: user.phone_number,
+        is_registered: user.is_registered,
+    })
 }
 pub fn get_all_restaurants(deps: Deps) -> StdResult<GetRestaurantsResponse> {
     let restaurants: Vec<Restaurant> = RESTAURANTS

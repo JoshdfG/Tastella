@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UserResponse",
+  "type": "object",
+  "required": [
+    "id",
+    "is_registered",
+    "name",
+    "phone_number",
+    "wallet"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "is_registered": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
+    },
+    "phone_number": {
+      "type": "string"
+    },
+    "wallet": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

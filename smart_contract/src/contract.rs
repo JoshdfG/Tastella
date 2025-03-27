@@ -6,7 +6,7 @@ use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::query::{
     get_all_restaurants, get_escrow, get_menu_items_for_restaurant, get_order_by_id,
     get_order_cost, get_order_status, get_order_status_by_id, get_orders_for_restaurant,
-    get_owners, get_rider, get_rider_by_address, get_user_orders, get_user_restaurants,
+    get_owners, get_rider, get_rider_by_address, get_user, get_user_orders, get_user_restaurants,
     query_platform_config,
 };
 
@@ -43,6 +43,7 @@ pub fn instantiate(
 pub fn migrate(deps: DepsMut, env: Env, msg: MigrateMsg) -> Result<Response, ContractError> {
     match msg {
         MigrateMsg::ConvertToMultiOwner {} => migrate::migrate(deps, env, msg),
+        MigrateMsg::UpdateRidersAndUsers {} => migrate::update_rider_and_add_user(deps, env),
     }
 }
 
@@ -60,7 +61,13 @@ pub fn execute(
             restaurant_address,
         } => execute::register_restaurant(deps, info, name, image_uri, restaurant_address),
 
-        ExecuteMsg::RegisterRider { name } => execute::register_rider(deps, info, name),
+        ExecuteMsg::RegisterRider { name, phone_number } => {
+            execute::register_rider(deps, info, name, phone_number)
+        }
+
+        ExecuteMsg::RegisterUser { name, phone_number } => {
+            execute::register_user(deps, info, name, phone_number)
+        }
 
         ExecuteMsg::CreateOrder {
             restaurant_id,
@@ -112,6 +119,8 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetPlatformConfig {} => to_json_binary(&query_platform_config(deps)?),
 
         QueryMsg::GetOwners {} => to_json_binary(&get_owners(deps)?),
+
+        QueryMsg::GetUser { id } => to_json_binary(&get_user(deps, id)?),
 
         QueryMsg::GetRestaurants {} => to_json_binary(&get_all_restaurants(deps)?),
 
